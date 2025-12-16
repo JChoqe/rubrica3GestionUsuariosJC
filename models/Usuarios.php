@@ -1,18 +1,21 @@
 <?php
+/**
+ * Modelo Usuario
+ * 
+ * Gestiona la entidad usuario y su persistencia
+ */
 
-// Control centralizado de errores
 require_once(__DIR__ . "/../error.php");
 
-// Modelo de dominio: Usuario
 class Usuario
 {
-    public $usuario_id;
-    public $usuario;
-    public $email;
-    public $nombre;
-    public $password;
-    public $apellidos;
-    public $rol_id;
+    private $usuario_id;
+    private $usuario;
+    private $email;
+    private $nombre;
+    private $password;
+    private $apellidos;
+    private $rol_id;
 
     public function __construct($data = [])
     {
@@ -24,7 +27,7 @@ class Usuario
             $this->email      = $data['email'] ?? null;
             $this->nombre     = $data['nombre'] ?? null;
             $this->apellidos  = $data['apellidos'] ?? null;
-            $this->rol_id     = $data['rol_id'] ?? null;
+            $this->rol_id     = $data['rol_id'] ?? 2;
         }
     }
 
@@ -45,7 +48,7 @@ class Usuario
     }
     public function setUsuario($u)
     {
-        $this->usuario = $u;
+        $this->usuario = trim($u);
     }
 
     public function getPassword()
@@ -63,7 +66,7 @@ class Usuario
     }
     public function setEmail($e)
     {
-        $this->email = $e;
+        $this->email = strtolower(trim($e));
     }
 
     public function getNombre()
@@ -72,7 +75,7 @@ class Usuario
     }
     public function setNombre($n)
     {
-        $this->nombre = $n;
+        $this->nombre = trim($n);
     }
 
     public function getApellidos()
@@ -81,16 +84,16 @@ class Usuario
     }
     public function setApellidos($a)
     {
-        $this->apellidos = $a;
+        $this->apellidos = trim($a);
     }
 
     public function getRolId()
     {
-        return $this->rol_id ?? 0;
+        return $this->rol_id ?? 2;
     }
     public function setRolId($r)
     {
-        $this->rol_id = $r;
+        $this->rol_id = (int)$r;
     }
 
     // ===== Persistencia =====
@@ -120,26 +123,48 @@ class Usuario
             $this->usuario_id = $pdo->lastInsertId();
         } else {
 
-            $stmt = $pdo->prepare(
-                "UPDATE usuarios SET
-                    usuario = :usuario,
-                    password = :password,
-                    email = :email,
-                    nombre = :nombre,
-                    apellidos = :apellidos,
-                    rol_id = :rol_id
-                 WHERE usuario_id = :id"
-            );
+            // Si la contraseña está vacía, no la actualiza
+            if (empty($this->password)) {
+                $stmt = $pdo->prepare(
+                    "UPDATE usuarios SET
+                        usuario = :usuario,
+                        email = :email,
+                        nombre = :nombre,
+                        apellidos = :apellidos,
+                        rol_id = :rol_id
+                     WHERE usuario_id = :id"
+                );
 
-            $stmt->execute([
-                ':usuario'   => $this->usuario,
-                ':password'  => password_hash($this->password . $claveEC, PASSWORD_DEFAULT),
-                ':email'     => $this->email,
-                ':nombre'    => $this->nombre,
-                ':apellidos' => $this->apellidos,
-                ':rol_id'    => $this->rol_id,
-                ':id'        => $this->usuario_id
-            ]);
+                $stmt->execute([
+                    ':usuario'   => $this->usuario,
+                    ':email'     => $this->email,
+                    ':nombre'    => $this->nombre,
+                    ':apellidos' => $this->apellidos,
+                    ':rol_id'    => $this->rol_id,
+                    ':id'        => $this->usuario_id
+                ]);
+            } else {
+                $stmt = $pdo->prepare(
+                    "UPDATE usuarios SET
+                        usuario = :usuario,
+                        password = :password,
+                        email = :email,
+                        nombre = :nombre,
+                        apellidos = :apellidos,
+                        rol_id = :rol_id
+                     WHERE usuario_id = :id"
+                );
+
+                $stmt->execute([
+                    ':usuario'   => $this->usuario,
+                    ':password'  => password_hash($this->password . $claveEC, PASSWORD_DEFAULT),
+                    ':email'     => $this->email,
+                    ':nombre'    => $this->nombre,
+                    ':apellidos' => $this->apellidos,
+                    ':rol_id'    => $this->rol_id,
+                    ':id'        => $this->usuario_id
+                ]);
+            }
         }
     }
 
@@ -176,7 +201,7 @@ class Usuario
 
     public static function obtenerTodos($pdo)
     {
-        $stmt = $pdo->query("SELECT * FROM usuarios");
+        $stmt = $pdo->query("SELECT * FROM usuarios ORDER BY usuario");
         $usuarios = [];
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {

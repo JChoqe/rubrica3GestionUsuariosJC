@@ -8,14 +8,14 @@
  * Este archivo debe ser incluido al inicio de cada página PHP
  * 
  * @author Sistema de Gestión
- * @version 1.0
+ * @version 1.2
  */
 
 // Carga la configuración global del proyecto
 $config = require_once "config.php";
 
 // Carga de dependencias principales del sistema
-require_once "encriptador.php";  // Funciones de cifrado AES-256
+require_once "encriptador.php";  // Funciones de cifrado AES-256 (opcional)
 require_once "error.php";        // Gestión centralizada de errores
 require_once "sanetizar.php";    // Sanitización automática de inputs
 require_once "sesion.php";       // Control de sesiones de usuario
@@ -24,6 +24,49 @@ require_once "sesion.php";       // Control de sesiones de usuario
 require_once "db.php";
 $db  = new BaseDatos();
 $pdo = $db->getPdo();
+
+// Habilitar foreign keys en SQLite
+$pdo->exec("PRAGMA foreign_keys = ON");
+
+// ===== FUNCIONES DE PROTECCIÓN CSRF =====
+
+/**
+ * Genera un token CSRF y lo guarda en sesión
+ * 
+ * @return string Token CSRF generado
+ */
+function generarTokenCSRF(): string
+{
+    if (!isset($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+/**
+ * Verifica que el token CSRF sea válido
+ * 
+ * @param string $token Token recibido del formulario
+ * @return bool true si es válido, false si no
+ */
+function verificarTokenCSRF($token): bool
+{
+    if (!isset($_SESSION['csrf_token'])) {
+        return false;
+    }
+    return hash_equals($_SESSION['csrf_token'], $token);
+}
+
+/**
+ * Genera el campo hidden HTML con el token CSRF
+ * 
+ * @return string HTML del campo hidden
+ */
+function campoCSRF(): string
+{
+    $token = generarTokenCSRF();
+    return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($token) . '">';
+}
 
 // ===== FUNCIONES DE VALIDACIÓN =====
 
@@ -35,9 +78,10 @@ $pdo = $db->getPdo();
  */
 function comprobarPatronEmail($email): bool
 {
-    // Expresión regular para email válido
-    $patron = "/^[^\s@]+@[^\s@]+\.[^\s@]+$/";
-    return (bool) preg_match($patron, $email);
+    if (empty(trim($email))) {
+        return false;
+    }
+    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
 }
 
 /**
@@ -53,8 +97,11 @@ function comprobarPatronEmail($email): bool
  */
 function comprobarDocumento($doc): bool
 {
+    if (empty(trim($doc))) {
+        return false;
+    }
     $patron = "/^(?:\d{8}[A-HJ-NP-TV-Z]|[XYZ]\d{7}[A-HJ-NP-TV-Z]|[ABCDEFGHJKLMNPQRSUVW]\d{7}[0-9A-J])$/i";
-    return (bool) preg_match($patron, $doc);
+    return (bool) preg_match($patron, strtoupper(trim($doc)));
 }
 
 /**
@@ -77,7 +124,7 @@ function comprobarPassword($password): bool
     }
 
     // Patrón: al menos 8 caracteres, una mayúscula, un número y un carácter especial
-    $patron = "/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/";
+    $patron = "/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/";
     return (bool) preg_match($patron, $password);
 }
 
@@ -112,6 +159,10 @@ function comprobarPasswordOpcional($password): bool
  */
 function comprobarTelefonoEspanol($telefono): bool
 {
+    if (empty(trim($telefono))) {
+        return false;
+    }
+    
     // Eliminar espacios, guiones y paréntesis
     $telefono_limpio = preg_replace('/[\s\-\(\)]/', '', $telefono);
     
@@ -129,6 +180,10 @@ function comprobarTelefonoEspanol($telefono): bool
  */
 function formatearTelefono($telefono): string
 {
+    if (empty($telefono)) {
+        return '';
+    }
+    
     $telefono_limpio = preg_replace('/[\s\-\(\)]/', '', $telefono);
     
     if (strlen($telefono_limpio) === 9) {
@@ -153,7 +208,7 @@ function comprobarNombre($nombre): bool
     }
     
     // Permite letras (incluidas acentuadas), espacios y apóstrofes
-    $patron = "/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s']+$/";
+    $patron = "/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s']+$/u";
     return (bool) preg_match($patron, $nombre);
 }
 
@@ -178,7 +233,7 @@ function esAdmin(): bool
 function requerirAdmin(): void
 {
     if (!esAdmin()) {
-        header('Location: listado.php?error=No tienes permisos de administrador');
+        header('Location: listado.php?error=' . urlencode('No tienes permisos de administrador'));
         exit;
     }
 }

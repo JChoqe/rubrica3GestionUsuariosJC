@@ -1,54 +1,57 @@
 <?php
+
 /**
  * listado_contactos.php
  * 
  * Listado de contactos del sistema
- * Puede mostrar:
- * - Todos los contactos (si no hay filtro)
- * - Contactos de un cliente específico (si viene cliente_id)
+ * Puede mostrar todos los contactos o filtrar por cliente
  */
 
 require_once "utils.php";
 require_once "./models/Contactos.php";
 require_once "./models/Clientes.php";
 
-// Verificar que haya sesión activa
+// Verificar sesión activa
 if (!isset($_SESSION["usuario"])) {
     header('Location: login.php?accion=sesioncaducada');
     exit;
 }
 
-// Obtener usuario conectado y su rol
+// Obtener usuario conectado
 $usu_conectado = $_SESSION["usuario"];
 $rol_id_usuario = $usu_conectado->getRolId();
 
-// Verificar si viene filtro por cliente
+// Verificar filtro por cliente
 $cliente_id = (int)($_GET['cliente_id'] ?? 0);
 $nombre_cliente = '';
+$cliente = null;
 
 // Cargar contactos según filtro
-if ($cliente_id > 0) {
-    // Contactos de un cliente específico
-    $contactos = Contacto::obtenerPorCliente($pdo, $cliente_id);
-    
-    // Obtener nombre del cliente para el título
-    $cliente = Cliente::obtenerPorId($pdo, $cliente_id);
-    if ($cliente) {
-        $nombre_cliente = $cliente->getNombre();
+try {
+    if ($cliente_id > 0) {
+        // Contactos de un cliente específico
+        $cliente = Cliente::obtenerPorId($pdo, $cliente_id);
+
+        if ($cliente && $cliente->getId() > 0) {
+            $nombre_cliente = $cliente->getNombre();
+            $contactos = Contacto::obtenerPorCliente($pdo, $cliente_id);
+        } else {
+            header('Location: listado_clientes.php?error=' . urlencode('Cliente no encontrado'));
+            exit;
+        }
     } else {
-        // Cliente no existe, redirigir
-        header('Location: listado_clientes.php?error=Cliente no encontrado');
-        exit;
+        // Todos los contactos
+        $contactos = Contacto::obtenerTodos($pdo);
     }
-} else {
-    // Todos los contactos
-    $contactos = Contacto::obtenerTodos($pdo);
+} catch (Exception $e) {
+    error_log("Error al cargar contactos: " . $e->getMessage());
+    $contactos = [];
 }
 
-// Mensaje de éxito si viene de guardar
+// Mensaje de éxito
 $success = $_GET['success'] ?? '';
 if ($success !== '') {
-    echo "<script>alert('" . htmlspecialchars($success) . "')</script>";
+    echo "<script>alert('" . htmlspecialchars($success, ENT_QUOTES) . "');</script>";
 }
 ?>
 <!doctype html>
@@ -64,7 +67,7 @@ if ($success !== '') {
 
 <body>
     <div class="tabla-contenedor">
-        
+
         <?php if ($cliente_id > 0): ?>
             <h1>Contactos de: <?= htmlspecialchars($nombre_cliente) ?></h1>
         <?php else: ?>
@@ -73,20 +76,20 @@ if ($success !== '') {
 
         <!-- Barra de navegación -->
         <div class="barra-navegacion">
-            <button class="btn info" onclick="window.location.href='ficha.php'">
+            <button class="btn info" onclick="window.location.href='profile.php'">
                 Mi Perfil
             </button>
-            
+
             <?php if ($cliente_id > 0): ?>
                 <button class="btn secondary" onclick="window.location.href='listado_clientes.php'">
-                    Volver a Clientes
+                    ← Volver a Clientes
                 </button>
             <?php else: ?>
                 <button class="btn secondary" onclick="window.location.href='listado_clientes.php'">
                     Clientes
                 </button>
             <?php endif; ?>
-            
+
             <?php if ($rol_id_usuario == 1): ?>
                 <button class="btn secondary" onclick="window.location.href='listado.php'">
                     Usuarios
@@ -101,13 +104,13 @@ if ($success !== '') {
         <!-- Botón añadir (solo admin) -->
         <?php if ($rol_id_usuario == 1): ?>
             <?php if ($cliente_id > 0): ?>
-                <a href="ficha_contacto.php?cliente_id=<?= $cliente_id ?>&volver_cliente=true" 
-                   class="btn primary anadir">
-                    ➕ Añadir Contacto
+                <a href="ficha_contacto.php?cliente_id=<?= $cliente_id ?>&volver_cliente=true"
+                    class="btn primary anadir">
+                    Añadir Contacto
                 </a>
             <?php else: ?>
                 <a href="ficha_contacto.php" class="btn primary anadir">
-                    ➕ Añadir Contacto
+                    Añadir Contacto
                 </a>
             <?php endif; ?>
         <?php endif; ?>
@@ -129,8 +132,7 @@ if ($success !== '') {
                         <?php if ($cliente_id == 0): ?>
                             <th>Cliente</th>
                         <?php endif; ?>
-                        <th>Nombre</th>
-                        <th>Apellidos</th>
+                        <th>Nombre Completo</th>
                         <th>Email</th>
                         <th>Teléfono</th>
                         <?php if ($rol_id_usuario == 1): ?>
@@ -142,24 +144,25 @@ if ($success !== '') {
                     <?php foreach ($contactos as $contacto): ?>
                         <tr>
                             <td><?= htmlspecialchars($contacto->getId()) ?></td>
-                            
+
                             <?php if ($cliente_id == 0): ?>
                                 <td>
-                                    <?php 
+                                    <?php
                                     $cli = Cliente::obtenerPorId($pdo, $contacto->getClienteId());
-                                    echo $cli ? htmlspecialchars($cli->getNombre()) : 'N/A';
+                                    echo $cli && $cli->getId() > 0 ? htmlspecialchars($cli->getNombre()) : 'N/A';
                                     ?>
                                 </td>
                             <?php endif; ?>
-                            
-                            <td><?= htmlspecialchars($contacto->getNombre()) ?></td>
-                            <td><?= htmlspecialchars($contacto->getApellidos()) ?></td>
+
+                            <td>
+                                <?= htmlspecialchars($contacto->getNombre() . ' ' . $contacto->getApellidos()) ?>
+                            </td>
                             <td><?= htmlspecialchars($contacto->getEmail()) ?></td>
                             <td><?= htmlspecialchars(formatearTelefono($contacto->getTelefono())) ?></td>
-                            
+
                             <?php if ($rol_id_usuario == 1): ?>
                                 <td class="acciones">
-                                    <?php 
+                                    <?php
                                     $url_editar = "ficha_contacto.php?contacto_id=" . $contacto->getId();
                                     if ($cliente_id > 0) {
                                         $url_editar .= "&volver_cliente=true&cliente_id=" . $cliente_id;
@@ -169,8 +172,8 @@ if ($success !== '') {
                                         Editar
                                     </a>
 
-                                    <button class="btn borrar" 
-                                            onclick="eliminarContacto(<?= $contacto->getId() ?>, <?= $cliente_id ?>)">
+                                    <button class="btn borrar"
+                                        onclick="eliminarContacto(<?= $contacto->getId() ?>, <?= $cliente_id ?>)">
                                         Borrar
                                     </button>
                                 </td>
@@ -183,10 +186,12 @@ if ($success !== '') {
     </div>
 
     <!-- Formulario oculto para eliminación -->
-    <form method="post" id="frmEli" name="frmEli" style="visibility: hidden;">
-        <input type="hidden" name="contacto_id" id="contacto_id">
-        <input type="hidden" name="cliente_id_filtro" id="cliente_id_filtro" value="<?= $cliente_id ?>">
-    </form>
+    <?php if ($rol_id_usuario == 1): ?>
+        <form method="post" id="frmEli" name="frmEli" style="display: none;">
+            <input type="hidden" name="contacto_id" id="contacto_id">
+            <input type="hidden" name="cliente_id_filtro" id="cliente_id_filtro" value="<?= $cliente_id ?>">
+        </form>
+    <?php endif; ?>
 </body>
 
 </html>

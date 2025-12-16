@@ -20,6 +20,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// Verificar token CSRF
+$csrf_token = $_POST['csrf_token'] ?? '';
+if (!verificarTokenCSRF($csrf_token)) {
+    header('Location: profile.php?error=Token de seguridad inválido');
+    exit;
+}
+
 $usuario_actual = $_SESSION["usuario"];
 $usuario_id = $usuario_actual->getId();
 $accion = $_POST['accion'] ?? '';
@@ -63,12 +70,6 @@ if ($accion === 'actualizar_datos') {
     
     // Actualizar datos
     try {
-        $usu = Usuario::obtenerPorId($pdo, $usuario_id);
-        $usu->setNombre($nombre);
-        $usu->setApellidos($apellidos);
-        $usu->setEmail($email);
-        
-        // Mantener la contraseña actual (no cambiarla)
         $stmt = $pdo->prepare("UPDATE usuarios SET nombre = :nombre, apellidos = :apellidos, email = :email WHERE usuario_id = :id");
         $stmt->execute([
             ':nombre' => $nombre,
