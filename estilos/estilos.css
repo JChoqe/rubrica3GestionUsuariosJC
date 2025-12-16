@@ -1,11 +1,12 @@
 /**
- * estilos.css
- * Sistema de Gestión – Diseño Profesional (NO RESPONSIVE)
+ * estilos.css (mejorado y responsive)
+ * Sistema de Gestión – Diseño Profesional
+ * Versión: responsiva, accesible y con variables
  */
 
 /* ========================================
-   RESET Y BASE
-======================================== */
+   RESET Y VARIABLES
+   ======================================== */
 
 * {
     margin: 0;
@@ -13,100 +14,181 @@
     box-sizing: border-box;
 }
 
-body {
-    font-family: "Segoe UI", Arial, sans-serif;
-    background-color: #f2f4f7;
-    color: #2e2e2e;
-    font-size: 14px;
-    line-height: 1.4;
+:root {
+    /* Colores */
+    --bg: #f2f4f7;
+    --card-bg: #ffffff;
+    --text: #2e2e2e;
+    --muted: #6b7280;
+    --border: #dcdfe3;
+    --surface: #ffffff;
+    --thead-bg: #1f2937;
+    --thead-color: #ffffff;
+
+    /* Paleta CTA */
+    --primary: #2563eb;
+    --secondary: #6b7280;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --info: #0284c7;
+
+    /* Espaciado */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+
+    /* Radii y sombras */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    /* Tipografía */
+    --font-base: "Segoe UI", Arial, sans-serif;
+    --font-size: 14px; /* base, usado para rem si se desea */
+
+    /* Layout */
+    --container-max: 920px;
+    --panel-width: 520px;
+    --tabla-max: 1200px;
+
+    /* Breakpoints */
+    --bp-sm: 480px;
+    --bp-md: 768px;
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
 }
 
 /* ========================================
-   CONTENEDORES
-======================================== */
+   BASE
+   ======================================== */
+
+html { font-size: 100%; -webkit-text-size-adjust: 100%; }
+body {
+    font-family: var(--font-base);
+    background-color: var(--bg);
+    color: var(--text);
+    font-size: var(--font-size);
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+/* Accesibilidad foco visible */
+:focus { outline: none; }
+:focus-visible {
+    outline: 3px solid rgba(37,99,235,0.18);
+    outline-offset: 2px;
+    border-radius: calc(var(--radius-sm) + 2px);
+}
+
+/* ========================================
+   CONTENEDORES (RESPONSIVE)
+   ======================================== */
 
 .container {
-    width: 520px;
-    margin: 60px auto;
-    background: #ffffff;
-    padding: 35px;
-    border: 1px solid #dcdfe3;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    max-width: var(--panel-width);
+    width: 100%;
+    margin: 3.75rem auto;
+    background: var(--card-bg);
+    padding: 2.1875rem; /* 35px */
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-md);
 }
 
 .tabla-contenedor {
-    width: 1200px;
-    margin: 40px auto;
-    background: #ffffff;
-    padding: 25px;
-    border: 1px solid #dcdfe3;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    max-width: var(--tabla-max);
+    width: 100%;
+    margin: 2.5rem auto;
+    background: var(--card-bg);
+    padding: 1.5625rem; /* 25px */
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-md);
+}
+
+/* Si quieres centrar contenidos dentro del layout general */
+.wrapper {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 clamp(0.75rem, 2vw, 1rem);
 }
 
 /* ========================================
    TIPOGRAFÍA
-======================================== */
+   ======================================== */
 
 h1 {
-    font-size: 24px;
+    font-size: clamp(1.25rem, 1.05rem + 1.2vw, 1.5rem); /* ~24px */
     font-weight: 600;
-    margin-bottom: 25px;
+    margin-bottom: 1.5625rem; /* 25px */
     color: #1f2937;
     text-align: center;
 }
 
 h2 {
-    font-size: 18px;
+    font-size: clamp(1rem, 0.9rem + 0.9vw, 1.125rem); /* ~18px */
     font-weight: 600;
-    margin: 25px 0 15px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #dcdfe3;
+    margin: 1.5625rem 0 0.9375rem; /* 25px 0 15px */
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
     color: #374151;
 }
 
 .subtitulo {
     text-align: center;
-    color: #6b7280;
-    margin-bottom: 25px;
+    color: var(--muted);
+    margin-bottom: 1.5625rem;
 }
 
 /* ========================================
    FORMULARIOS
-======================================== */
+   ======================================== */
 
 form {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 1.125rem; /* 18px */
 }
 
 .campo {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 0.375rem; /* 6px */
 }
 
 label {
     font-weight: 600;
     color: #374151;
-    font-size: 13px;
+    font-size: 0.8125rem; /* 13px */
 }
 
 input,
 select,
 textarea {
-    padding: 10px 12px;
+    padding: 0.625rem 0.75rem; /* 10px 12px */
     border: 1px solid #cfd4da;
-    font-size: 14px;
-    border-radius: 4px;
+    font-size: 0.875rem; /* 14px */
+    border-radius: var(--radius-sm);
     font-family: inherit;
+    background: white;
+    color: inherit;
+    transition: box-shadow 160ms ease, border-color 160ms ease;
 }
 
 input:focus,
 select:focus,
 textarea:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37,99,235,0.08);
 }
 
 input[disabled] {
@@ -114,195 +196,185 @@ input[disabled] {
     color: #9ca3af;
 }
 
+/* textarea */
+textarea { min-height: 100px; resize: vertical; }
+
 /* ========================================
    BOTONES
-======================================== */
+   ======================================== */
 
 .btn {
-    padding: 10px 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.125rem; /* 10px 18px */
     border: 1px solid transparent;
-    font-size: 13px;
+    font-size: 0.8125rem; /* 13px */
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     text-align: center;
-}
-
-.btn.primary {
-    background: #2563eb;
+    transition: transform 140ms ease, box-shadow 140ms ease, opacity 120ms ease;
+    background: var(--primary);
     color: #ffffff;
 }
 
-.btn.secondary {
-    background: #6b7280;
-    color: #ffffff;
-}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(37,99,235,0.12); opacity: 0.95; }
 
-.btn.editar {
-    background: #16a34a;
-    color: #ffffff;
-    padding: 6px 12px;
-}
+.btn.primary { background: var(--primary); color: #fff; }
+.btn.secondary { background: var(--secondary); color: #fff; }
+.btn.editar { background: var(--success); color: #fff; padding: 0.375rem 0.75rem; }
+.btn.borrar { background: var(--danger); color: #fff; padding: 0.375rem 0.75rem; }
+.btn.warning { background: var(--warning); color: #fff; }
+.btn.info { background: var(--info); color: #fff; }
 
-.btn.borrar {
-    background: #dc2626;
-    color: #ffffff;
-    padding: 6px 12px;
-}
+/* Acciones: fila de botones */
+.acciones { display: flex; gap: 0.5rem; align-items: center; }
 
-.btn.warning {
-    background: #d97706;
-    color: #ffffff;
-}
-
-.btn.info {
-    background: #0284c7;
-    color: #ffffff;
-}
-
-.btn:hover {
-    opacity: 0.9;
+/* En pantallas pequeñas, botones a ancho completo si necesario */
+@media (max-width: var(--bp-md)) {
+    .acciones { flex-direction: column; align-items: stretch; }
+    .acciones .btn { width: 100%; }
 }
 
 /* ========================================
-   ACCIONES
-======================================== */
-
-.acciones {
-    display: flex;
-    gap: 8px;
-}
-
-/* ========================================
-   NAVEGACIÓN
-======================================== */
+   BARRA DE NAVEGACIÓN
+   ======================================== */
 
 .barra-navegacion {
     display: flex;
-    gap: 10px;
-    margin-bottom: 25px;
-    padding-bottom: 15px;
+    gap: 0.625rem; /* 10px */
+    margin-bottom: 1.5625rem;
+    padding-bottom: 0.9375rem;
     border-bottom: 1px solid #e5e7eb;
+    flex-wrap: wrap;
 }
 
 /* ========================================
-   TABLAS
-======================================== */
+   TABLAS (RESPONSIVE)
+   ======================================== */
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+}
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
-    font-size: 13px;
+    margin-top: 1.25rem; /* 20px */
+    font-size: 0.8125rem; /* 13px */
+    min-width: 600px;
 }
 
 thead {
-    background: #1f2937;
-    color: #ffffff;
+    background: var(--thead-bg);
+    color: var(--thead-color);
 }
 
 th {
-    padding: 10px;
+    padding: 0.625rem; /* 10px */
     text-align: left;
     font-weight: 600;
 }
 
 td {
-    padding: 10px;
+    padding: 0.625rem;
     border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
 }
 
-tbody tr:hover {
-    background: #f9fafb;
+tbody tr:hover { background: #f9fafb; }
+
+td.acciones { display: flex; gap: 0.375rem; }
+
+/* Forzar mejor lectura en móvil: padding reducido */
+@media (max-width: var(--bp-sm)) {
+    th, td { padding: 0.5rem; font-size: 0.8125rem; }
+    table { min-width: 0; }
 }
 
-td.acciones {
-    display: flex;
-    gap: 6px;
-}
+/* Alternativa: convertir tabla a "cards" en móvil (opcional) */
+/* .table-card pattern can be added later if desired */
 
 /* ========================================
-   BADGES
-======================================== */
+   BADGES Y MENSAJES
+   ======================================== */
 
 .badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
+    padding: 0.25rem 0.625rem; /* 4px 10px */
+    border-radius: 9999px;
+    font-size: 0.75rem; /* 12px */
     font-weight: 600;
+    display: inline-block;
 }
 
-.badge-admin {
-    background: #fde68a;
-    color: #92400e;
-}
+.badge-admin { background: #fde68a; color: #92400e; }
+.badge-user  { background: #e5e7eb; color: #374151; }
 
-.badge-user {
-    background: #e5e7eb;
-    color: #374151;
-}
-
-/* ========================================
-   MENSAJES
-======================================== */
-
+/* ALERTAS */
 .alerta {
-    padding: 12px;
-    border-radius: 4px;
-    margin-bottom: 20px;
-    border: 1px solid;
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.25rem;
+    border: 1px solid transparent;
 }
 
-.alerta.success {
-    background: #ecfdf5;
-    border-color: #16a34a;
-    color: #065f46;
-}
-
-.alerta.error {
-    background: #fef2f2;
-    border-color: #dc2626;
-    color: #7f1d1d;
-}
-
-.alerta.warning {
-    background: #fffbeb;
-    border-color: #d97706;
-    color: #92400e;
-}
+.alerta.success { background: #ecfdf5; border-color: var(--success); color: #065f46; }
+.alerta.error   { background: #fef2f2; border-color: var(--danger); color: #7f1d1d; }
+.alerta.warning { background: #fffbeb; border-color: var(--warning); color: #92400e; }
 
 /* ========================================
    ENLACES
-======================================== */
+   ======================================== */
 
-.enlace {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.enlace a {
-    color: #2563eb;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.enlace a:hover {
-    text-decoration: underline;
-}
+.enlace { text-align: center; margin-top: 1.25rem; }
+.enlace a { color: var(--primary); text-decoration: none; font-weight: 600; }
+.enlace a:hover { text-decoration: underline; }
 
 /* ========================================
    UTILIDADES
-======================================== */
+   ======================================== */
 
-.text-center {
-    text-align: center;
+.text-center { text-align: center; }
+.mt-20 { margin-top: 1.25rem; }
+.mb-20 { margin-bottom: 1.25rem; }
+
+/* screen-reader only */
+.sr-only {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0);
+    white-space: nowrap; border: 0;
 }
 
-.mt-20 {
-    margin-top: 20px;
+/* ========================================
+   MODO OSCURO (OPCIONAL)
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #071025;
+        --card-bg: #071027;
+        --text: #e6eefc;
+        --border: rgba(255,255,255,0.04);
+        --thead-bg: #0b1220;
+        --thead-color: #e6eefc;
+    }
+    body { background-color: var(--bg); color: var(--text); }
+    .container, .tabla-contenedor { background: var(--card-bg); border: 1px solid var(--border); box-shadow: none; }
+    table thead { background: var(--thead-bg); color: var(--thead-color); }
 }
 
-.mb-20 {
-    margin-bottom: 20px;
-}
+/* ========================================
+   NOTAS:
+   - Envuelve tablas grandes con <div class="table-responsive">...<table>...</table></div>
+   - .container y .tabla-contenedor ahora son fluidos y responsivos.
+   - Si quieres que las tablas se transformen en tarjetas en móvil puedo añadir el patrón data-label.
+*/
