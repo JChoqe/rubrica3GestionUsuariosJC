@@ -66,7 +66,7 @@ $clientes = Cliente::obtenerTodos($pdo);
         <!-- Botón añadir cliente (solo admin) -->
         <?php if ($rol_id_usuario == 1): ?>
             <a href="#" onclick="javascript:IrFichaCliente(true)" class="btn primary anadir">
-                ➕ Añadir Cliente
+                Añadir Cliente
             </a>
         <?php endif; ?>
 

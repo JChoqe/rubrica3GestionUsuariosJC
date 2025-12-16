@@ -121,7 +121,7 @@ if ($success !== "") {
                         class="input-disabled">
                 </div>
 
-                <button type="submit" class="btn primary">💾 Actualizar Datos</button>
+                <button type="submit" class="btn primary">Actualizar Datos</button>
             </form>
         </div>
 
@@ -161,7 +161,7 @@ if ($success !== "") {
                         required>
                 </div>
 
-                <button type="submit" class="btn warning">🔒 Cambiar Contraseña</button>
+                <button type="submit" class="btn warning"> Cambiar Contraseña</button>
             </form>
         </div>
     </div>

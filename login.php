@@ -89,7 +89,7 @@ if ($registro === "exitoso") {
         </p>
         
         <p class="enlace">
-            <a href="index.php">← Volver al inicio</a>
+            <a href="index.php">Volver al inicio</a>
         </p>
     </div>
 </body>

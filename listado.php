@@ -1,4 +1,5 @@
 <?php
+
 /**
  * listado.php
  * Panel principal para usuarios autenticados
@@ -44,7 +45,7 @@ $rol_id_usuario = $usu_conectado->getRolId();
             <button class="btn info" onclick="window.location.href='profile.php'">
                 Mi Perfil
             </button>
-            
+
             <button class="btn secondary" onclick="IrListadoClientes()">
                 Clientes
             </button>
@@ -56,7 +57,7 @@ $rol_id_usuario = $usu_conectado->getRolId();
 
         <?php if ($rol_id_usuario == 1): ?>
             <a href="#" onclick="IrFicha(true)" class="btn primary anadir">
-                ➕ Añadir Usuario
+                Añadir Usuario
             </a>
         <?php endif; ?>
 
@@ -91,14 +92,14 @@ $rol_id_usuario = $usu_conectado->getRolId();
 
                         <?php if ($rol_id_usuario == 1): ?>
                             <td class="acciones">
-                                <a class="btn editar" 
-                                   href="ficha.php?usuario_id=<?= $u->getId() ?>&listado=true">
+                                <a class="btn editar"
+                                    href="ficha.php?usuario_id=<?= $u->getId() ?>&listado=true">
                                     Editar
                                 </a>
 
                                 <?php if ($u->getId() != $usu_conectado->getId()): ?>
-                                    <button class="btn borrar" 
-                                            onclick="eliminarUsuario(<?= $u->getId() ?>)">
+                                    <button class="btn borrar"
+                                        onclick="eliminarUsuario(<?= $u->getId() ?>)">
                                         Borrar
                                     </button>
                                 <?php endif; ?>
